@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <title>Milk Hisab - Auto Daily Tracker</title>
+  <style>
+    :root {
+      --primary: #0f766e; --primary-hover: #0d655d;
+      --bg: #f0fdf4; --card: #ffffff; --text: #022c22; --muted: #4b5563;
+      --border: #d1d5db; --accent: #f59e0b; --danger: #ef4444;
+      --safe-bottom: env(safe-area-inset-bottom);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: calc(32px + var(--safe-bottom)); }
+    
+    .container { max-width: 480px; margin: 0 auto; padding: 12px; }
+    h1 { text-align: center; margin: 10px 0 16px; color: var(--primary); font-size: 1.4rem; }
+    
+    .card { background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    label { display: block; font-weight: 500; margin: 8px 0 4px; font-size: 0.85rem; color: var(--muted); }
+    input, select {
+      width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 1rem; background: #fafafa; transition: border 0.2s;
+      -webkit-appearance: none; appearance: none;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary); background: #fff; }
+    
+    .row { display: flex; gap: 10px; margin-bottom: 4px; }
+    .row > * { flex: 1; }
+    
+    button {
+      width: 100%; padding: 13px; border: none; border-radius: 8px; font-size: 0.95rem;
+      font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-secondary { background: #e5e7eb; color: var(--text); margin-top: 8px; }
+    .btn-accent { background: var(--accent); color: #000; margin-top: 8px; }
+    .btn-danger { background: #fee2e2; color: var(--danger); width: auto; padding: 6px 10px; font-size: 0.8rem; margin: 0; }
+    
+    .tab-bar { display: flex; background: var(--card); border-radius: 10px; overflow: hidden; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .tab { flex: 1; padding: 12px; text-align: center; font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent; }
+    .tab.active { background: #ecfdf5; color: var(--primary); border-bottom-color: var(--primary); }
+    
+    .hidden { display: none !important; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.85rem; }
+    th, td { padding: 9px 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th { color: var(--muted); font-weight: 500; background: #f9fafb; }    .is-exception { background: #fff7ed; }
+    
+    .summary { display: flex; justify-content: space-between; padding: 12px 0; border-top: 2px dashed var(--border); margin-top: 8px; font-weight: 600; }
+    .summary div { text-align: center; }
+    .summary span { display: block; font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+    
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: #0f172a; color: white; padding: 12px 18px; border-radius: 24px;
+      font-size: 0.85rem; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 99;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    
+    .empty { text-align: center; padding: 20px; color: var(--muted); font-style: italic; }
+    .note-tag { font-size: 0.7rem; background: #e0f2fe; color: #0369a1; padding: 2px 5px; border-radius: 4px; margin-left: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🥛 Milk Hisab</h1>
+    <div class="tab-bar">
+      <div class="tab active" data-tab="setup">⚙️ Setup & Exceptions</div>
+      <div class="tab" data-tab="report">📊 Report & PDF</div>
+    </div>
+
+    <!-- SETUP TAB -->
+    <div id="setup-tab">
+      <div class="card">
+        <h3 style="margin-bottom:8px;">Customer Profile</h3>
+        <div class="row">
+          <select id="cust-select"><option value="">Select Customer</option></select>
+          <button id="add-cust-btn" class="btn-secondary" style="margin-top:0; width:auto;">+ New</button>
+        </div>
+        <div class="row">
+          <div><label>Default Liters/Day</label><input type="number" id="def-liters" inputmode="decimal" step="0.1" min="0"></div>
+          <div><label>Price / Liter (₹)</label><input type="number" id="def-price" inputmode="decimal" step="0.1" min="0"></div>
+        </div>
+        <label>Start Date</label>
+        <input type="date" id="start-date">
+        <button id="save-profile-btn" class="btn-primary">💾 Save Profile</button>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom:8px;">Add Date Exception</h3>
+        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;">Change liters/price for a specific day. Use 0 liters for "no milk".</p>
+        <div class="row">
+          <div><label>Date</label><input type="date" id="exc-date"></div>
+          <div><label>Liters</label><input type="number" id="exc-liters" inputmode="decimal" step="0.1" min="0"></div>
+        </div>
+        <div class="row">          <div><label>Price/L (₹)</label><input type="number" id="exc-price" inputmode="decimal" step="0.1" min="0"></div>
+          <div><label>Note</label><input type="text" id="exc-note" placeholder="Holiday, less, etc."></div>
+        </div>
+        <button id="add-exc-btn" class="btn-accent">➕ Add Exception</button>
+      </div>
+    </div>
+
+    <!-- REPORT TAB -->
+    <div id="report-tab" class="hidden">
+      <div class="card">
+        <label>Select Customer</label>
+        <select id="rep-cust-select"><option value="">Choose...</option></select>
+        <div class="row" style="margin-top:8px;">
+          <div><label>From Date</label><input type="date" id="rep-from"></div>
+          <div><label>To Date</label><input type="date" id="rep-to"></div>
+        </div>
+        <button id="generate-btn" class="btn-primary">📅 Generate Report</button>
+      </div>
+
+      <div class="card" id="report-result" style="display:none;">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Date</th><th>Liters</th><th>Price</th><th>Total</th><th></th></tr></thead>
+            <tbody id="rep-tbody"></tbody>
+          </table>
+        </div>
+        <div class="summary">
+          <div><span>Days</span><strong id="sum-days">0</strong></div>
+          <div><span>Total L</span><strong id="sum-liters">0</strong></div>
+          <div><span>Total ₹</span><strong id="sum-amount">0</strong></div>
+        </div>
+        <button id="pdf-btn" class="btn-primary">📄 Download PDF</button>
+        <button id="backup-btn" class="btn-secondary" style="margin-top:8px;">💾 Backup Data</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Saved!</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+  <script>
+    const STORAGE = 'milk_hisab_v2';
+    let state = { customers: [], exceptions: [] };
+    let reportData = [];
+
+    // DOM
+    const $ = id => document.getElementById(id);
+    const els = {      custSelect: $('cust-select'), repCust: $('rep-cust-select'),
+      defLiters: $('def-liters'), defPrice: $('def-price'), startDate: $('start-date'),
+      excDate: $('exc-date'), excLiters: $('exc-liters'), excPrice: $('exc-price'), excNote: $('exc-note'),
+      repFrom: $('rep-from'), repTo: $('rep-to'),
+      tbody: $('rep-tbody'), resultBox: $('report-result'),
+      toast: $('toast')
+    };
+
+    function init() {
+      loadState();
+      renderCustOptions();
+      els.startDate.value = new Date().toISOString().slice(0,10);
+      els.excDate.value = new Date().toISOString().slice(0,10);
+      bindEvents();
+    }
+
+    function loadState() {
+      const s = localStorage.getItem(STORAGE);
+      if (s) try { state = JSON.parse(s); } catch(e){}
+    }
+    function saveState() { localStorage.setItem(STORAGE, JSON.stringify(state)); }
+
+    function renderCustOptions() {
+      const opts = state.customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      els.custSelect.innerHTML = `<option value="">Select Customer</option>${opts}`;
+      els.repCust.innerHTML = `<option value="">Choose...</option>${opts}`;
+    }
+
+    function showToast(msg) {
+      els.toast.textContent = msg;
+      els.toast.classList.add('show');
+      setTimeout(() => els.toast.classList.remove('show'), 2000);
+    }
+
+    function addCustomer() {
+      const name = prompt('Customer Name:');
+      if (name?.trim()) {
+        state.customers.push({ id: Date.now().toString(), name: name.trim() });
+        saveState(); renderCustOptions();
+        els.custSelect.value = state.customers.at(-1).id;
+        showToast('👤 Customer Added');
+      }
+    }
+
+    function saveProfile() {
+      const id = els.custSelect.value;
+      if (!id) return showToast('⚠️ Select a customer first');
+      const c = state.customers.find(x => x.id === id);
+      c.defaultLiters = parseFloat(els.defLiters.value) || 0;
+      c.defaultPrice = parseFloat(els.defPrice.value) || 0;      c.startDate = els.startDate.value || new Date().toISOString().slice(0,10);
+      saveState(); showToast('✅ Profile Saved');
+    }
+
+    function addException() {
+      const custId = els.custSelect.value;
+      const date = els.excDate.value;
+      const liters = parseFloat(els.excLiters.value);
+      const price = parseFloat(els.excPrice.value) || state.customers.find(c=>c.id===custId)?.defaultPrice || 0;
+      const note = els.excNote.value.trim();
+
+      if (!custId || !date || isNaN(liters)) return showToast('⚠️ Fill required fields');
+      if (state.exceptions.find(e => e.customerId === custId && e.date === date)) {
+        if (!confirm('Override existing exception for this date?')) return;
+        state.exceptions = state.exceptions.filter(e => !(e.customerId === custId && e.date === date));
+      }
+      state.exceptions.push({ customerId: custId, date, liters, price, note });
+      saveState(); showToast('📝 Exception Added');
+      els.excLiters.value = els.excNote.value = '';
+    }
+
+    function getDatesInRange(start, end) {
+      const dates = [];
+      let d = new Date(start);
+      while (d <= new Date(end)) {
+        dates.push(d.toISOString().slice(0, 10));
+        d.setDate(d.getDate() + 1);
+      }
+      return dates;
+    }
+
+    function generateReport() {
+      const custId = els.repCust.value;
+      const from = els.repFrom.value;
+      const to = els.repTo.value;
+      if (!custId || !from || !to) return showToast('⚠️ Select customer & dates');
+      if (from > to) return showToast('⚠️ End date must be after start date');
+
+      const cust = state.customers.find(c => c.id === custId);
+      const dates = getDatesInRange(from, to);
+      reportData = dates.map(date => {
+        const exc = state.exceptions.find(e => e.customerId === custId && e.date === date);
+        const liters = exc ? exc.liters : (cust.defaultLiters || 0);
+        const price = exc ? exc.price : (cust.defaultPrice || 0);
+        return { date, liters, price, amount: liters * price, note: exc?.note || '', isExc: !!exc };
+      });
+
+      renderTable();
+      els.resultBox.style.display = 'block';
+      showToast('📊 Report Generated');    }
+
+    function renderTable() {
+      els.tbody.innerHTML = reportData.map((r, i) => `
+        <tr class="${r.isExc ? 'is-exception' : ''}">
+          <td>${formatDate(r.date)}</td>
+          <td>${r.liters}</td>
+          <td>₹${r.price}</td>
+          <td>₹${r.amount.toFixed(2)}${r.note ? `<span class="note-tag">${r.note}</span>` : ''}</td>
+          <td>${r.isExc ? '<button class="btn-danger del-exc-btn" data-idx="'+i+'">✕</button>' : ''}</td>
+        </tr>
+      `).join('');
+
+      const days = reportData.length;
+      const liters = reportData.reduce((s, r) => s + r.liters, 0);
+      const amount = reportData.reduce((s, r) => s + r.amount, 0);
+      $('sum-days').textContent = days;
+      $('sum-liters').textContent = liters.toFixed(1);
+      $('sum-amount').textContent = amount.toFixed(2);
+    }
+
+    function deleteException(idx) {
+      const r = reportData[idx];
+      if (confirm(`Remove exception for ${r.date}?`)) {
+        state.exceptions = state.exceptions.filter(e => !(e.customerId === els.repCust.value && e.date === r.date));
+        saveState(); generateReport(); showToast('🗑️ Removed');
+      }
+    }
+
+    function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const cust = state.customers.find(c => c.id === els.repCust.value);
+      if (!cust || reportData.length === 0) return showToast('⚠️ No data');
+
+      doc.setFontSize(16);
+      doc.text(`Milk Hisab: ${cust.name}`, 14, 15);
+      doc.setFontSize(10);
+      doc.text(`Period: ${formatDate(els.repFrom.value)} to ${formatDate(els.repTo.value)}`, 14, 22);
+
+      const rows = reportData.map(r => [
+        formatDate(r.date), 
+        `${r.liters} L`, 
+        `₹${r.price}`, 
+        `₹${r.amount.toFixed(2)}`, 
+        r.note || '-'
+      ]);
+
+      doc.autoTable({
+        startY: 30,        head: [['Date', 'Liters', 'Price/L', 'Amount', 'Note']],
+        body: rows,
+        theme: 'grid',
+        styles: { fontSize: 9, cellPadding: 2 },
+        headStyles: { fillColor: [15, 118, 110] },
+        alternateRowStyles: { fillColor: [240, 253, 244] }
+      });
+
+      const finalY = doc.lastAutoTable.finalY + 10;
+      doc.setFontSize(11);
+      doc.text(`Total Days: ${reportData.length}`, 14, finalY);
+      doc.text(`Total Liters: ${reportData.reduce((s,r)=>s+r.liters,0).toFixed(1)} L`, 14, finalY + 6);
+      doc.text(`Total Amount: ₹${reportData.reduce((s,r)=>s+r.amount,0).toFixed(2)}`, 14, finalY + 12);
+
+      doc.save(`milk-hisab-${cust.name}-${els.repFrom.value}.pdf`);
+      showToast('📄 PDF Downloaded');
+    }
+
+    function backupData() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = `milk-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
+      showToast('💾 Backup Saved');
+    }
+
+    function formatDate(d) {
+      return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+    }
+
+    function bindEvents() {
+      document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        $('setup-tab').classList.toggle('hidden', t.dataset.tab !== 'setup');
+        $('report-tab').classList.toggle('hidden', t.dataset.tab !== 'report');
+      }));
+
+      els.custSelect.addEventListener('change', () => {
+        const c = state.customers.find(x => x.id === els.custSelect.value);
+        if (c) { els.defLiters.value = c.defaultLiters || ''; els.defPrice.value = c.defaultPrice || ''; els.startDate.value = c.startDate || ''; }
+      });
+
+      $('add-cust-btn').onclick = addCustomer;
+      $('save-profile-btn').onclick = saveProfile;
+      $('add-exc-btn').onclick = addException;
+      $('generate-btn').onclick = generateReport;
+      $('pdf-btn').onclick = generatePDF;
+      $('backup-btn').onclick = backupData;
+      els.tbody.addEventListener('click', e => { if (e.target.classList.contains('del-exc-btn')) deleteException(e.target.dataset.idx); });
+    }
+    init();
+  </script>
+</body>
+</html>
