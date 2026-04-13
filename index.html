@@ -200,22 +200,6 @@
     .modal-icon.info {
       background: #e0f2fe;
     }
-    
-    /* Loading spinner */
-    .spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255,255,255,.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 1s ease-in-out infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
   </style>
 </head>
 <body>
@@ -243,7 +227,8 @@
         <button id="save-profile-btn" class="btn-primary">💾 Save Profile</button>
       </div>
 
-      <div class="card">        <h3 style="margin-bottom:8px;">Add Date Exception</h3>        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;">Change liters/price for a specific day. Use 0 liters for "no milk".</p>
+      <div class="card">        <h3 style="margin-bottom:8px;">Add Date Exception</h3>
+        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;">Change liters/price for a specific day. Use 0 liters for "no milk".</p>
         <div class="row">
           <div><label>Date</label><input type="date" id="exc-date"></div>
           <div><label>Liters</label><input type="number" id="exc-liters" inputmode="decimal" step="0.1" min="0"></div>
@@ -258,8 +243,7 @@
       <!-- ⚠️ NEW: Clear All Data Section -->
       <div class="card">
         <h3 style="margin-bottom:8px; color:var(--danger);">🗑️ Danger Zone</h3>
-        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:8px;">Permanently delete all customers, exceptions, and settings.</p>
-        <div class="warning-box">
+        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:8px;">Permanently delete all customers, exceptions, and settings.</p>        <div class="warning-box">
           ⚠️ This action cannot be undone. <strong>Backup first</strong> if you want to keep your data.
         </div>
         <button id="clear-all-btn" class="btn-clear">🗑️ Clear All Data</button>
@@ -292,7 +276,8 @@
         </div>
         <button id="pdf-btn" class="btn-primary">📄 Download PDF</button>
         <button id="backup-btn" class="btn-secondary" style="margin-top:8px;">💾 Backup Data</button>      </div>
-    </div>  </div>
+    </div>
+  </div>
 
   <div id="toast" class="toast">Saved!</div>
 
@@ -307,8 +292,7 @@
       <input type="text" id="modal-input" class="modal-input hidden" placeholder="Enter value...">
       <div class="modal-actions">
         <button id="modal-cancel-btn" class="modal-cancel">Cancel</button>
-        <button id="modal-confirm-btn" class="modal-confirm">Confirm</button>
-      </div>
+        <button id="modal-confirm-btn" class="modal-confirm">Confirm</button>      </div>
     </div>
   </div>
 
@@ -319,7 +303,7 @@
     const STORAGE = 'milk_hisab_v2';
     let state = { customers: [], exceptions: [] };
     let reportData = [];
-    let modalResolve = null;
+    let modalCallback = null;
 
     // DOM
     const $ = id => document.getElementById(id);
@@ -341,8 +325,10 @@
 
     function init() {
       loadState();
-      renderCustOptions();      els.startDate.value = new Date().toISOString().slice(0,10);
+      renderCustOptions();
+      els.startDate.value = new Date().toISOString().slice(0,10);
       els.excDate.value = new Date().toISOString().slice(0,10);
+      setupModalHandlers();
       bindEvents();
     }
 
@@ -355,8 +341,7 @@
     function renderCustOptions() {
       const opts = state.customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
       els.custSelect.innerHTML = `<option value="">Select Customer</option>${opts}`;
-      els.repCust.innerHTML = `<option value="">Choose...</option>${opts}`;
-    }
+      els.repCust.innerHTML = `<option value="">Choose...</option>${opts}`;    }
 
     function showToast(msg, type = 'normal') {
       els.toast.textContent = msg;
@@ -366,91 +351,123 @@
       setTimeout(() => els.toast.classList.remove('show'), 2500);
     }
 
-    // Professional Modal Functions
-    function showModal(options) {
+    // Simple Modal Functions - FIXED
+    function showModal(config) {
       return new Promise((resolve) => {
-        modalResolve = resolve;
-        
         // Set content
-        els.modalTitle.textContent = options.title || 'Confirm';
-        els.modalMessage.textContent = options.message || '';
-        els.modalIcon.textContent = options.icon || 'ℹ️';
-        
-        // Set icon style
-        els.modalIcon.className = 'modal-icon ' + (options.type || 'info');
+        els.modalTitle.textContent = config.title || 'Confirm';
+        els.modalMessage.textContent = config.message || '';
+        els.modalIcon.textContent = config.icon || 'ℹ️';
+        els.modalIcon.className = 'modal-icon ' + (config.type || 'info');
         
         // Show/hide input
-        if (options.input) {
+        if (config.input) {
           els.modalInput.classList.remove('hidden');
-          els.modalInput.placeholder = options.placeholder || 'Enter value...';
-          els.modalInput.value = options.defaultValue || '';
+          els.modalInput.placeholder = config.placeholder || 'Enter value...';
+          els.modalInput.value = config.defaultValue || '';
         } else {
           els.modalInput.classList.add('hidden');
         }
         
         // Set button text
-        els.modalConfirmBtn.textContent = options.confirmText || 'Confirm';
-        els.modalCancelBtn.textContent = options.cancelText || 'Cancel';        
+        els.modalConfirmBtn.textContent = config.confirmText || 'Confirm';
+        els.modalCancelBtn.textContent = config.cancelText || 'Cancel';
+        
         // Set confirm button style
-        if (options.danger) {
-          els.modalConfirmBtn.classList.add('danger');
-        } else {
-          els.modalConfirmBtn.classList.remove('danger');
-        }
+        els.modalConfirmBtn.classList.toggle('danger', config.danger || false);
+        
+        // Store callback
+        modalCallback = resolve;
         
         // Show modal
         els.modalOverlay.classList.add('active');
         
         // Focus input if present
-        if (options.input) {
+        if (config.input) {
           setTimeout(() => els.modalInput.focus(), 100);
         }
       });
     }
 
     function hideModal() {
-      els.modalOverlay.classList.remove('active');
-      modalResolve = null;
+      els.modalOverlay.classList.remove('active');      modalCallback = null;
     }
 
-    async function showInputPrompt(title, message, placeholder = 'Enter value...') {
-      const result = await showModal({
-        title: title,
-        message: message,
-        icon: '👤',
-        type: 'info',
-        input: true,
-        placeholder: placeholder,
-        confirmText: 'Add',
-        cancelText: 'Cancel'
+    function setupModalHandlers() {
+      // Cancel button
+      els.modalCancelBtn.addEventListener('click', () => {
+        const callback = modalCallback;
+        hideModal();
+        if (callback) callback(null);
       });
-      return result;
-    }
-
-    async function showConfirm(title, message, options = {}) {
-      const result = await showModal({
-        title: title,
-        message: message,
-        icon: options.icon || '⚠️',
-        type: options.type || 'warning',
-        confirmText: options.confirmText || 'Yes',
-        cancelText: options.cancelText || 'No',
-        danger: options.danger || false
-      });
-      return result;
-    }
-    async function addCustomer() {
-      const name = await showInputPrompt(
-        'Add New Customer',
-        'Enter the customer name to create a new profile:',
-        'Customer Name'
-      );
       
-      if (name && name.trim()) {
-        state.customers.push({ id: Date.now().toString(), name: name.trim() });
-        saveState(); renderCustOptions();
-        els.custSelect.value = state.customers.at(-1).id;
-        showToast('👤 Customer Added', 'success');
+      // Confirm button
+      els.modalConfirmBtn.addEventListener('click', () => {
+        const callback = modalCallback;
+        const inputValue = els.modalInput.value.trim();
+        hideModal();
+        if (callback) {
+          // If input is shown, return the value; otherwise return true
+          callback(els.modalInput.classList.contains('hidden') ? true : inputValue);
+        }
+      });
+      
+      // Overlay click
+      els.modalOverlay.addEventListener('click', (e) => {
+        if (e.target === els.modalOverlay) {
+          const callback = modalCallback;
+          hideModal();
+          if (callback) callback(null);
+        }
+      });
+      
+      // Enter key
+      els.modalInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          els.modalConfirmBtn.click();
+        }
+      });
+      
+      // Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && els.modalOverlay.classList.contains('active')) {
+          const callback = modalCallback;
+          hideModal();
+          if (callback) callback(null);
+        }
+      });
+    }
+
+    // Add Customer - SIMPLIFIED
+    async function addCustomer() {      try {
+        const name = await showModal({
+          title: 'Add New Customer',
+          message: 'Enter the customer name to create a new profile:',
+          icon: '👤',
+          type: 'info',
+          input: true,
+          placeholder: 'Customer Name',
+          confirmText: 'Add',
+          cancelText: 'Cancel'
+        });
+        
+        console.log('Customer name received:', name);
+        
+        if (name && name.trim()) {
+          state.customers.push({ 
+            id: Date.now().toString(), 
+            name: name.trim() 
+          });
+          saveState(); 
+          renderCustOptions();
+          els.custSelect.value = state.customers[state.customers.length - 1].id;
+          showToast('👤 Customer Added', 'success');
+        } else if (name !== null) {
+          showToast('⚠️ Please enter a valid name');
+        }
+      } catch (error) {
+        console.error('Error adding customer:', error);
+        showToast('❌ Error adding customer', 'error');
       }
     }
 
@@ -471,14 +488,16 @@
       const price = parseFloat(els.excPrice.value) || state.customers.find(c=>c.id===custId)?.defaultPrice || 0;
       const note = els.excNote.value.trim();
 
-      if (!custId || !date || isNaN(liters)) return showToast('⚠️ Fill required fields');
-      
+      if (!custId || !date || isNaN(liters)) return showToast('⚠️ Fill required fields');      
       if (state.exceptions.find(e => e.customerId === custId && e.date === date)) {
-        const confirmed = await showConfirm(
-          'Override Exception',
-          'An exception already exists for this date. Do you want to replace it?',
-          { icon: '⚠️', type: 'warning', confirmText: 'Replace', cancelText: 'Cancel' }
-        );
+        const confirmed = await showModal({
+          title: 'Override Exception',
+          message: 'An exception already exists for this date. Do you want to replace it?',
+          icon: '⚠️',
+          type: 'warning',
+          confirmText: 'Replace',
+          cancelText: 'Cancel'
+        });
         if (!confirmed) return;
         state.exceptions = state.exceptions.filter(e => !(e.customerId === custId && e.date === date));
       }
@@ -488,36 +507,38 @@
       els.excLiters.value = els.excNote.value = '';
     }
 
-    // ⚠️ NEW: Clear All Data Function    async function clearAllData() {
-      const confirmed = await showConfirm(
-        '⚠️ Delete All Data',
-        'Are you absolutely sure? This will permanently delete all customers, exceptions, and settings. This action cannot be undone!',
-        { icon: '🗑️', type: 'danger', confirmText: 'Delete Everything', cancelText: 'Keep Data', danger: true }
-      );
+    async function clearAllData() {
+      const confirmed = await showModal({
+        title: '⚠️ Delete All Data',
+        message: 'Are you absolutely sure? This will permanently delete all customers, exceptions, and settings. This action cannot be undone!',
+        icon: '🗑️',
+        type: 'danger',
+        confirmText: 'Delete Everything',
+        cancelText: 'Keep Data',
+        danger: true
+      });
       
       if (!confirmed) return;
       
-      // Offer backup first
       if (state.customers.length > 0 || state.exceptions.length > 0) {
-        const backupNow = await showConfirm(
-          'Backup Your Data',
-          'Would you like to backup your data before deleting?',
-          { icon: '💾', type: 'info', confirmText: 'Backup First', cancelText: 'Delete Without Backup' }
-        );
+        const backupNow = await showModal({
+          title: 'Backup Your Data',
+          message: 'Would you like to backup your data before deleting?',
+          icon: '💾',
+          type: 'info',
+          confirmText: 'Backup First',
+          cancelText: 'Delete Without Backup'
+        });
         
         if (backupNow) {
           backupData();
-          // Wait a moment for download to start
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
       
-      // Clear everything
       localStorage.removeItem(STORAGE);
-      state = { customers: [], exceptions: [] };
-      reportData = [];
+      state = { customers: [], exceptions: [] };      reportData = [];
       
-      // Reset UI
       renderCustOptions();
       els.defLiters.value = els.defPrice.value = els.startDate.value = '';
       els.excLiters.value = els.excPrice.value = els.excNote.value = '';
@@ -537,7 +558,8 @@
       return dates;
     }
 
-    function generateReport() {      const custId = els.repCust.value;
+    function generateReport() {
+      const custId = els.repCust.value;
       const from = els.repFrom.value;
       const to = els.repTo.value;
       if (!custId || !from || !to) return showToast('⚠️ Select customer & dates');
@@ -562,9 +584,9 @@
         <tr class="${r.isExc ? 'is-exception' : ''}">
           <td>${formatDate(r.date)}</td>
           <td>${r.liters}</td>
-          <td>₹${r.price}</td>          <td>₹${r.amount.toFixed(2)}${r.note ? `<span class="note-tag">${r.note}</span>` : ''}</td>
-          <td>${r.isExc ? '<button class="btn-danger del-exc-btn" data-idx="'+i+'">✕</button>' : ''}</td>
-        </tr>
+          <td>₹${r.price}</td>
+          <td>₹${r.amount.toFixed(2)}${r.note ? `<span class="note-tag">${r.note}</span>` : ''}</td>
+          <td>${r.isExc ? '<button class="btn-danger del-exc-btn" data-idx="'+i+'">✕</button>' : ''}</td>        </tr>
       `).join('');
 
       const days = reportData.length;
@@ -577,19 +599,22 @@
 
     async function deleteException(idx) {
       const r = reportData[idx];
-      const confirmed = await showConfirm(
-        'Remove Exception',
-        `Are you sure you want to remove the exception for ${formatDate(r.date)}?`,
-        { icon: '🗑️', type: 'warning', confirmText: 'Remove', cancelText: 'Keep' }
-      );
+      const confirmed = await showModal({
+        title: 'Remove Exception',
+        message: `Are you sure you want to remove the exception for ${formatDate(r.date)}?`,
+        icon: '🗑️',
+        type: 'warning',
+        confirmText: 'Remove',
+        cancelText: 'Keep'
+      });
       
       if (confirmed) {
         state.exceptions = state.exceptions.filter(e => !(e.customerId === els.repCust.value && e.date === r.date));
         saveState(); generateReport(); showToast('🗑️ Removed', 'success');
-      }    }
+      }
+    }
 
     function generatePDF() {
-      // Check if jsPDF is loaded
       if (!window.jspdf) {
         showToast('⚠️ PDF library not loaded. Check internet connection.', 'error');
         return;
@@ -602,7 +627,6 @@
         const cust = state.customers.find(c => c.id === els.repCust.value);
         if (!cust || reportData.length === 0) return showToast('⚠️ No data to generate PDF', 'error');
 
-        // Header
         doc.setFontSize(18);
         doc.setTextColor(15, 118, 110);
         doc.text('Milk Hisab Report', 14, 15);
@@ -612,8 +636,6 @@
         doc.text(`Customer: ${cust.name}`, 14, 22);
         doc.text(`Period: ${formatDate(els.repFrom.value)} to ${formatDate(els.repTo.value)}`, 14, 28);
         doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 14, 34);
-
-        // Prepare table data
         const rows = reportData.map(r => [
           formatDate(r.date), 
           `${r.liters.toFixed(1)} L`, 
@@ -622,7 +644,6 @@
           r.note || '-'
         ]);
 
-        // Add table
         doc.autoTable({
           startY: 40,
           head: [['Date', 'Liters', 'Price/L', 'Amount', 'Note']],
@@ -635,7 +656,8 @@
             fontStyle: 'bold',
             halign: 'center'
           },
-          alternateRowStyles: { fillColor: [240, 253, 244] },          columnStyles: {
+          alternateRowStyles: { fillColor: [240, 253, 244] },
+          columnStyles: {
             0: { halign: 'left' },
             1: { halign: 'center' },
             2: { halign: 'center' },
@@ -644,7 +666,6 @@
           }
         });
 
-        // Summary section
         const finalY = doc.lastAutoTable.finalY + 10;
         const totalLiters = reportData.reduce((s,r)=>s+r.liters,0).toFixed(1);
         const totalAmount = reportData.reduce((s,r)=>s+r.amount,0).toFixed(2);
@@ -662,10 +683,8 @@
         doc.setFont('helvetica', 'bold');
         doc.text(`Total Amount: ₹${totalAmount}`, 14, finalY + 26);
 
-        // Download the PDF
         const filename = `milk-hisab-${cust.name.replace(/\s+/g, '-').toLowerCase()}-${els.repFrom.value}.pdf`;
-        doc.save(filename);
-        showToast('📄 PDF Downloaded Successfully!', 'success');
+        doc.save(filename);        showToast('📄 PDF Downloaded Successfully!', 'success');
         
       } catch (error) {
         console.error('PDF Generation Error:', error);
@@ -684,7 +703,8 @@
         showToast('💾 Backup Saved', 'success');
       } catch (error) {
         showToast('❌ Backup failed', 'error');
-      }    }
+      }
+    }
 
     function formatDate(d) {
       return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
@@ -707,69 +727,17 @@
         }
       });
 
-      $('add-cust-btn').onclick = addCustomer;
-      $('save-profile-btn').onclick = saveProfile;
-      $('add-exc-btn').onclick = addException;
-      $('generate-btn').onclick = generateReport;
-      $('pdf-btn').onclick = generatePDF;
-      $('backup-btn').onclick = backupData;
-      
-      // ⚠️ NEW: Clear All Data Button
-      $('clear-all-btn').onclick = clearAllData;
-      
+      $('add-cust-btn').addEventListener('click', addCustomer);
+      $('save-profile-btn').addEventListener('click', saveProfile);
+      $('add-exc-btn').addEventListener('click', addException);
+      $('generate-btn').addEventListener('click', generateReport);
+      $('pdf-btn').addEventListener('click', generatePDF);
+      $('backup-btn').addEventListener('click', backupData);
+      $('clear-all-btn').addEventListener('click', clearAllData);      
       els.tbody.addEventListener('click', e => { 
-        if (e.target.classList.contains('del-exc-btn')) deleteException(e.target.dataset.idx); 
-      });
-      
-      // Modal event handlers - FIXED
-      els.modalCancelBtn.onclick = () => {
-        const resolve = modalResolve;
-        hideModal();
-        if (resolve) resolve(null);
-      };
-      
-      els.modalConfirmBtn.onclick = () => {
-        const inputValue = els.modalInput.value.trim();
-        const resolve = modalResolve;
-        hideModal();
-        if (resolve) {
-          resolve(els.modalInput.classList.contains('hidden') ? true : inputValue);        }
-      };
-      
-      // Close modal on overlay click
-      els.modalOverlay.onclick = (e) => {
-        if (e.target === els.modalOverlay) {
-          const resolve = modalResolve;
-          hideModal();
-          if (resolve) resolve(null);
-        }
-      };
-      
-      // Handle Enter key in modal input
-      els.modalInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          els.modalConfirmBtn.click();
-        }
-      });
-      
-      // Handle Escape key
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && els.modalOverlay.classList.contains('active')) {
-          const resolve = modalResolve;
-          hideModal();
-          if (resolve) resolve(null);
-        }
+        if (e.target.classList.contains('del-exc-btn')) deleteException(parseInt(e.target.dataset.idx)); 
       });
     }
-    
-    // Check if libraries loaded
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        if (!window.jspdf) {
-          console.warn('jsPDF not loaded');
-        }
-      }, 1000);
-    });
     
     init();
   </script>
