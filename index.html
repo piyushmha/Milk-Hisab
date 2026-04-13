@@ -47,7 +47,8 @@
     .tab.active { background: #ecfdf5; color: var(--primary); border-bottom-color: var(--primary); }
     
     .hidden { display: none !important; }
-    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.85rem; }    th, td { padding: 9px 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }    th { color: var(--muted); font-weight: 500; background: #f9fafb; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.85rem; }    th, td { padding: 9px 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th { color: var(--muted); font-weight: 500; background: #f9fafb; }
     .is-exception { background: #fff7ed; }
     
     .summary { display: flex; justify-content: space-between; padding: 12px 0; border-top: 2px dashed var(--border); margin-top: 8px; font-weight: 600; }
@@ -60,6 +61,8 @@
       font-size: 0.85rem; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 99;
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.error { background: #ef4444; }
+    .toast.success { background: #059669; }
     
     .empty { text-align: center; padding: 20px; color: var(--muted); font-style: italic; }
     .note-tag { font-size: 0.7rem; background: #e0f2fe; color: #0369a1; padding: 2px 5px; border-radius: 4px; margin-left: 4px; }
@@ -69,135 +72,49 @@
       padding: 12px; margin-top: 8px; font-size: 0.8rem; color: #991b1b;
     }
 
-    /* Professional Modal Styles */
+    /* Modal Styles */
     .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-      padding: 20px;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; padding: 20px;
     }
-    
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
+    .modal-overlay.active { display: flex; }
     
     .modal {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 24px;      width: 100%;
-      max-width: 400px;
+      background: var(--card); border-radius: 16px; padding: 24px;
+      width: 100%; max-width: 400px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      transform: scale(0.9) translateY(20px);
-      transition: transform 0.3s ease;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
     
-    .modal-overlay.active .modal {
-      transform: scale(1) translateY(0);
-    }
+    .modal-header { margin-bottom: 16px; }
+    .modal-title { font-size: 1.25rem; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+    .modal-message { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 16px; }
     
-    .modal-header {
-      margin-bottom: 16px;
+    .modal-input {      width: 100%; padding: 12px 16px; border: 2px solid var(--border);
+      border-radius: 10px; font-size: 1rem; margin-bottom: 20px;
     }
+    .modal-input:focus { outline: none; border-color: var(--primary); }
     
-    .modal-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-    
-    .modal-message {
-      color: var(--muted);
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-    
-    .modal-input {
-      width: 100%;
-      padding: 12px 16px;
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      font-size: 1rem;
-      margin: 16px 0;
-      transition: all 0.2s;
-    }
-    
-    .modal-input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
-    }
-    
-    .modal-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-    }
-        .modal-actions button {
-      flex: 1;
-      margin-top: 0;
-      padding: 12px;
-    }
-    
-    .modal-cancel {
-      background: #f3f4f6;
-      color: var(--text);
-    }
-    
-    .modal-cancel:hover {
-      background: #e5e7eb;
-    }
-    
-    .modal-confirm {
-      background: var(--primary);
-      color: white;
-    }
-    
-    .modal-confirm:hover {
-      background: var(--primary-hover);
-    }
-    
-    .modal-confirm.danger {
-      background: var(--danger);
-    }
-    
-    .modal-confirm.danger:hover {
-      background: #dc2626;
-    }
+    .modal-actions { display: flex; gap: 12px; }
+    .modal-actions button { flex: 1; margin-top: 0; padding: 12px; }
+    .modal-cancel { background: #f3f4f6; color: var(--text); }
+    .modal-confirm { background: var(--primary); color: white; }
+    .modal-confirm.danger { background: var(--danger); }
 
     .modal-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
-      font-size: 24px;
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; font-size: 24px;
     }
-    
-    .modal-icon.warning {
-      background: #fef3c7;
-    }
-    
-    .modal-icon.danger {
-      background: #fee2e2;
-    }    
-    .modal-icon.info {
-      background: #e0f2fe;
-    }
+    .modal-icon.warning { background: #fef3c7; }
+    .modal-icon.danger { background: #fee2e2; }
+    .modal-icon.info { background: #e0f2fe; }
   </style>
 </head>
 <body>
@@ -208,7 +125,6 @@
       <div class="tab" data-tab="report">📊 Report & PDF</div>
     </div>
 
-    <!-- SETUP TAB -->
     <div id="setup-tab">
       <div class="card">
         <h3 style="margin-bottom:8px;">Customer Profile</h3>
@@ -225,11 +141,11 @@
         <button id="save-profile-btn" class="btn-primary">💾 Save Profile</button>
       </div>
 
-      <div class="card">        <h3 style="margin-bottom:8px;">Add Date Exception</h3>
-        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;">Change liters/price for a specific day. Use 0 liters for "no milk".</p>
+      <div class="card">
+        <h3 style="margin-bottom:8px;">Add Date Exception</h3>
+        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;">Change liters/price for a specific day.</p>
         <div class="row">
-          <div><label>Date</label><input type="date" id="exc-date"></div>
-          <div><label>Liters</label><input type="number" id="exc-liters" inputmode="decimal" step="0.1" min="0"></div>
+          <div><label>Date</label><input type="date" id="exc-date"></div>          <div><label>Liters</label><input type="number" id="exc-liters" inputmode="decimal" step="0.1" min="0"></div>
         </div>
         <div class="row">
           <div><label>Price/L (₹)</label><input type="number" id="exc-price" inputmode="decimal" step="0.1" min="0"></div>
@@ -238,17 +154,14 @@
         <button id="add-exc-btn" class="btn-accent">➕ Add Exception</button>
       </div>
 
-      <!-- ⚠️ NEW: Clear All Data Section -->
       <div class="card">
         <h3 style="margin-bottom:8px; color:var(--danger);">🗑️ Danger Zone</h3>
-        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:8px;">Permanently delete all customers, exceptions, and settings.</p>
-        <div class="warning-box">
-          ⚠️ This action cannot be undone. <strong>Backup first</strong> if you want to keep your data.        </div>
+        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:8px;">Permanently delete all data.</p>
+        <div class="warning-box">⚠️ This cannot be undone. <strong>Backup first</strong> if needed.</div>
         <button id="clear-all-btn" class="btn-clear">🗑️ Clear All Data</button>
       </div>
     </div>
 
-    <!-- REPORT TAB -->
     <div id="report-tab" class="hidden">
       <div class="card">
         <label>Select Customer</label>
@@ -273,15 +186,15 @@
           <div><span>Total ₹</span><strong id="sum-amount">0</strong></div>
         </div>
         <button id="pdf-btn" class="btn-primary">📄 Download PDF</button>
-        <button id="backup-btn" class="btn-secondary" style="margin-top:8px;">💾 Backup Data</button>      </div>
+        <button id="backup-btn" class="btn-secondary" style="margin-top:8px;">💾 Backup Data</button>
+      </div>
     </div>
   </div>
 
   <div id="toast" class="toast">Saved!</div>
 
-  <!-- Professional Modals -->
-  <div id="modal-overlay" class="modal-overlay">
-    <div class="modal">
+  <!-- Modal -->
+  <div id="modal-overlay" class="modal-overlay">    <div class="modal">
       <div id="modal-icon" class="modal-icon info">👤</div>
       <div class="modal-header">
         <h3 id="modal-title" class="modal-title">Title</h3>
@@ -292,7 +205,8 @@
         <button id="modal-cancel-btn" class="modal-cancel">Cancel</button>
         <button id="modal-confirm-btn" class="modal-confirm">Confirm</button>
       </div>
-    </div>  </div>
+    </div>
+  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -301,9 +215,9 @@
     const STORAGE = 'milk_hisab_v2';
     let state = { customers: [], exceptions: [] };
     let reportData = [];
-    let modalResolve = null;
+    let modalResult = null;
+    let modalResolver = null;
 
-    // DOM
     const $ = id => document.getElementById(id);
     const els = {
       custSelect: $('cust-select'), repCust: $('rep-cust-select'),
@@ -312,12 +226,9 @@
       repFrom: $('rep-from'), repTo: $('rep-to'),
       tbody: $('rep-tbody'), resultBox: $('report-result'),
       toast: $('toast'),
-      modalOverlay: $('modal-overlay'),
-      modalIcon: $('modal-icon'),
-      modalTitle: $('modal-title'),
-      modalMessage: $('modal-message'),
-      modalInput: $('modal-input'),
-      modalCancelBtn: $('modal-cancel-btn'),
+      modalOverlay: $('modal-overlay'), modalIcon: $('modal-icon'),
+      modalTitle: $('modal-title'), modalMessage: $('modal-message'),
+      modalInput: $('modal-input'), modalCancelBtn: $('modal-cancel-btn'),
       modalConfirmBtn: $('modal-confirm-btn')
     };
 
@@ -327,12 +238,12 @@
       els.startDate.value = new Date().toISOString().slice(0,10);
       els.excDate.value = new Date().toISOString().slice(0,10);
       bindEvents();
+      bindModalEvents();
     }
 
     function loadState() {
       const s = localStorage.getItem(STORAGE);
-      if (s) try { state = JSON.parse(s); } catch(e){}
-    }
+      if (s) try { state = JSON.parse(s); } catch(e){}    }
     function saveState() { localStorage.setItem(STORAGE, JSON.stringify(state)); }
 
     function renderCustOptions() {
@@ -341,107 +252,119 @@
       els.repCust.innerHTML = `<option value="">Choose...</option>${opts}`;
     }
 
-    function showToast(msg) {      els.toast.textContent = msg;
-      els.toast.classList.add('show');
-      setTimeout(() => els.toast.classList.remove('show'), 2000);
+    function showToast(msg, type = 'normal') {
+      els.toast.textContent = msg;
+      els.toast.className = 'toast show';
+      if (type === 'error') els.toast.classList.add('error');
+      if (type === 'success') els.toast.classList.add('success');
+      setTimeout(() => els.toast.classList.remove('show'), 2500);
     }
 
-    // Professional Modal Functions
-    function showModal(options) {
+    // Simple Modal - Returns value directly
+    function showModal(config) {
       return new Promise((resolve) => {
-        modalResolve = resolve;
+        // Setup modal
+        els.modalTitle.textContent = config.title || 'Confirm';
+        els.modalMessage.textContent = config.message || '';
+        els.modalIcon.textContent = config.icon || 'ℹ️';
+        els.modalIcon.className = 'modal-icon ' + (config.type || 'info');
         
-        // Set content
-        els.modalTitle.textContent = options.title || 'Confirm';
-        els.modalMessage.textContent = options.message || '';
-        els.modalIcon.textContent = options.icon || 'ℹ️';
-        
-        // Set icon style
-        els.modalIcon.className = 'modal-icon ' + (options.type || 'info');
-        
-        // Show/hide input
-        if (options.input) {
+        if (config.input) {
           els.modalInput.classList.remove('hidden');
-          els.modalInput.placeholder = options.placeholder || 'Enter value...';
-          els.modalInput.value = options.defaultValue || '';
+          els.modalInput.placeholder = config.placeholder || 'Enter value...';
+          els.modalInput.value = '';
         } else {
           els.modalInput.classList.add('hidden');
         }
         
-        // Set button text
-        els.modalConfirmBtn.textContent = options.confirmText || 'Confirm';
-        els.modalCancelBtn.textContent = options.cancelText || 'Cancel';
+        els.modalConfirmBtn.textContent = config.confirmText || 'Confirm';
+        els.modalCancelBtn.textContent = config.cancelText || 'Cancel';
+        els.modalConfirmBtn.classList.toggle('danger', config.danger || false);
         
-        // Set confirm button style
-        if (options.danger) {
-          els.modalConfirmBtn.classList.add('danger');
-        } else {
-          els.modalConfirmBtn.classList.remove('danger');
-        }
+        // Store resolver
+        modalResolver = resolve;
+        modalResult = null;
         
         // Show modal
         els.modalOverlay.classList.add('active');
-        
-        // Focus input if present
-        if (options.input) {
-          setTimeout(() => els.modalInput.focus(), 100);
+        if (config.input) setTimeout(() => els.modalInput.focus(), 100);
+      });
+    }
+
+    function hideModal(value) {
+      els.modalOverlay.classList.remove('active');      if (modalResolver) {
+        modalResolver(value);
+        modalResolver = null;
+      }
+    }
+
+    function bindModalEvents() {
+      // Cancel button
+      els.modalCancelBtn.addEventListener('click', () => {
+        hideModal(null);
+      });
+      
+      // Confirm button
+      els.modalConfirmBtn.addEventListener('click', () => {
+        if (els.modalInput.classList.contains('hidden')) {
+          hideModal(true);
+        } else {
+          const value = els.modalInput.value.trim();
+          hideModal(value);
+        }
+      });
+      
+      // Enter key in input
+      els.modalInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          els.modalConfirmBtn.click();
+        }
+      });
+      
+      // Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && els.modalOverlay.classList.contains('active')) {
+          hideModal(null);
         }
       });
     }
 
-    function hideModal() {
-      els.modalOverlay.classList.remove('active');      modalResolve = null;
-    }
-
-    async function showInputPrompt(title, message, placeholder = 'Enter value...') {
-      const result = await showModal({
-        title: title,
-        message: message,
+    // Add Customer - NOW WORKING
+    async function addCustomer() {
+      const name = await showModal({
+        title: 'Add New Customer',
+        message: 'Enter the customer name:',
         icon: '👤',
         type: 'info',
         input: true,
-        placeholder: placeholder,
+        placeholder: 'Customer Name',
         confirmText: 'Add',
         cancelText: 'Cancel'
       });
-      return result;
-    }
-
-    async function showConfirm(title, message, options = {}) {
-      const result = await showModal({
-        title: title,
-        message: message,
-        icon: options.icon || '⚠️',
-        type: options.type || 'warning',
-        confirmText: options.confirmText || 'Yes',
-        cancelText: options.cancelText || 'No',
-        danger: options.danger || false
-      });
-      return result;
-    }
-
-    async function addCustomer() {
-      const name = await showInputPrompt(
-        'Add New Customer',
-        'Enter the customer name to create a new profile:',
-        'Customer Name'
-      );
-      
-      if (name && name.trim()) {
-        state.customers.push({ id: Date.now().toString(), name: name.trim() });
-        saveState(); renderCustOptions();
-        els.custSelect.value = state.customers.at(-1).id;
-        showToast('👤 Customer Added');
+            if (name && name.length > 0) {
+        const newCustomer = {
+          id: Date.now().toString(),
+          name: name.trim()
+        };
+        state.customers.push(newCustomer);
+        saveState();
+        renderCustOptions();
+        els.custSelect.value = newCustomer.id;
+        showToast('👤 Customer Added', 'success');
+      } else if (name !== null) {
+        showToast('⚠️ Please enter a name', 'error');
       }
     }
 
     function saveProfile() {
       const id = els.custSelect.value;
-      if (!id) return showToast('⚠️ Select a customer first');
+      if (!id) return showToast('⚠️ Select a customer first', 'error');
       const c = state.customers.find(x => x.id === id);
-      c.defaultLiters = parseFloat(els.defLiters.value) || 0;      c.defaultPrice = parseFloat(els.defPrice.value) || 0;
+      c.defaultLiters = parseFloat(els.defLiters.value) || 0;
+      c.defaultPrice = parseFloat(els.defPrice.value) || 0;
       c.startDate = els.startDate.value || new Date().toISOString().slice(0,10);
-      saveState(); showToast('✅ Profile Saved');
+      saveState();
+      showToast('✅ Profile Saved', 'success');
     }
 
     async function addException() {
@@ -451,64 +374,72 @@
       const price = parseFloat(els.excPrice.value) || state.customers.find(c=>c.id===custId)?.defaultPrice || 0;
       const note = els.excNote.value.trim();
 
-      if (!custId || !date || isNaN(liters)) return showToast('⚠️ Fill required fields');
+      if (!custId || !date || isNaN(liters)) return showToast('⚠️ Fill required fields', 'error');
       
       if (state.exceptions.find(e => e.customerId === custId && e.date === date)) {
-        const confirmed = await showConfirm(
-          'Override Exception',
-          'An exception already exists for this date. Do you want to replace it?',
-          { icon: '⚠️', type: 'warning', confirmText: 'Replace', cancelText: 'Cancel' }
-        );
+        const confirmed = await showModal({
+          title: 'Override Exception',
+          message: 'Replace existing exception?',
+          icon: '⚠️',
+          type: 'warning',
+          confirmText: 'Replace',
+          cancelText: 'Cancel'
+        });
         if (!confirmed) return;
         state.exceptions = state.exceptions.filter(e => !(e.customerId === custId && e.date === date));
       }
       
       state.exceptions.push({ customerId: custId, date, liters, price, note });
-      saveState(); showToast('📝 Exception Added');
-      els.excLiters.value = els.excNote.value = '';
+      saveState();      showToast('📝 Exception Added', 'success');
+      els.excLiters.value = '';
+      els.excNote.value = '';
     }
 
-    // ⚠️ NEW: Clear All Data Function
     async function clearAllData() {
-      const confirmed = await showConfirm(
-        '⚠️ Delete All Data',
-        'Are you absolutely sure? This will permanently delete all customers, exceptions, and settings. This action cannot be undone!',
-        { icon: '🗑️', type: 'danger', confirmText: 'Delete Everything', cancelText: 'Keep Data', danger: true }
-      );
+      const confirmed = await showModal({
+        title: '⚠️ Delete All Data',
+        message: 'This will permanently delete everything. Cannot be undone!',
+        icon: '🗑️',
+        type: 'danger',
+        confirmText: 'Delete Everything',
+        cancelText: 'Keep Data',
+        danger: true
+      });
       
       if (!confirmed) return;
       
-      // Offer backup first
-      if (state.customers.length > 0 || state.exceptions.length > 0) {
-        const backupNow = await showConfirm(
-          'Backup Your Data',
-          'Would you like to backup your data before deleting?',
-          { icon: '💾', type: 'info', confirmText: 'Backup First', cancelText: 'Delete Without Backup' }
-        );
-        
-        if (backupNow) {
-          backupData();
-          // Wait a moment for download to start          await new Promise(resolve => setTimeout(resolve, 500));
-        }
+      const backup = await showModal({
+        title: 'Backup Data?',
+        message: 'Save a backup before deleting?',
+        icon: '💾',
+        type: 'info',
+        confirmText: 'Backup First',
+        cancelText: 'Delete'
+      });
+      
+      if (backup) {
+        backupData();
+        await new Promise(r => setTimeout(r, 500));
       }
       
-      // Clear everything
       localStorage.removeItem(STORAGE);
       state = { customers: [], exceptions: [] };
       reportData = [];
-      
-      // Reset UI
       renderCustOptions();
-      els.defLiters.value = els.defPrice.value = els.startDate.value = '';
-      els.excLiters.value = els.excPrice.value = els.excNote.value = '';
+      els.defLiters.value = '';
+      els.defPrice.value = '';
+      els.startDate.value = '';
+      els.excLiters.value = '';
+      els.excPrice.value = '';
+      els.excNote.value = '';
       els.resultBox.style.display = 'none';
-      els.repCust.value = els.repFrom.value = els.repTo.value = '';
-      
-      showToast('🗑️ All data cleared');
+      els.repCust.value = '';
+      els.repFrom.value = '';
+      els.repTo.value = '';
+      showToast('🗑️ All data cleared', 'success');
     }
 
-    function getDatesInRange(start, end) {
-      const dates = [];
+    function getDatesInRange(start, end) {      const dates = [];
       let d = new Date(start);
       while (d <= new Date(end)) {
         dates.push(d.toISOString().slice(0, 10));
@@ -521,8 +452,8 @@
       const custId = els.repCust.value;
       const from = els.repFrom.value;
       const to = els.repTo.value;
-      if (!custId || !from || !to) return showToast('⚠️ Select customer & dates');
-      if (from > to) return showToast('⚠️ End date must be after start date');
+      if (!custId || !from || !to) return showToast('⚠️ Select customer & dates', 'error');
+      if (from > to) return showToast('⚠️ End date must be after start date', 'error');
 
       const cust = state.customers.find(c => c.id === custId);
       const dates = getDatesInRange(from, to);
@@ -535,150 +466,14 @@
 
       renderTable();
       els.resultBox.style.display = 'block';
-      showToast('📊 Report Generated');
+      showToast('📊 Report Generated', 'success');
     }
+
     function renderTable() {
       els.tbody.innerHTML = reportData.map((r, i) => `
         <tr class="${r.isExc ? 'is-exception' : ''}">
           <td>${formatDate(r.date)}</td>
           <td>${r.liters}</td>
-          <td>₹${r.price}</td>          <td>₹${r.amount.toFixed(2)}${r.note ? `<span class="note-tag">${r.note}</span>` : ''}</td>
-          <td>${r.isExc ? '<button class="btn-danger del-exc-btn" data-idx="'+i+'">✕</button>' : ''}</td>
-        </tr>
-      `).join('');
-
-      const days = reportData.length;
-      const liters = reportData.reduce((s, r) => s + r.liters, 0);
-      const amount = reportData.reduce((s, r) => s + r.amount, 0);
-      $('sum-days').textContent = days;
-      $('sum-liters').textContent = liters.toFixed(1);
-      $('sum-amount').textContent = amount.toFixed(2);
-    }
-
-    async function deleteException(idx) {
-      const r = reportData[idx];
-      const confirmed = await showConfirm(
-        'Remove Exception',
-        `Are you sure you want to remove the exception for ${formatDate(r.date)}?`,
-        { icon: '🗑️', type: 'warning', confirmText: 'Remove', cancelText: 'Keep' }
-      );
-      
-      if (confirmed) {
-        state.exceptions = state.exceptions.filter(e => !(e.customerId === els.repCust.value && e.date === r.date));
-        saveState(); generateReport(); showToast('🗑️ Removed');
-      }
-    }
-
-    function generatePDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const cust = state.customers.find(c => c.id === els.repCust.value);
-      if (!cust || reportData.length === 0) return showToast('⚠️ No data');
-
-      doc.setFontSize(16);
-      doc.text(`Milk Hisab: ${cust.name}`, 14, 15);
-      doc.setFontSize(10);
-      doc.text(`Period: ${formatDate(els.repFrom.value)} to ${formatDate(els.repTo.value)}`, 14, 22);
-
-      const rows = reportData.map(r => [
-        formatDate(r.date), 
-        `${r.liters} L`, 
-        `₹${r.price}`, 
-        `₹${r.amount.toFixed(2)}`, 
-        r.note || '-'
-      ]);
-      doc.autoTable({
-        startY: 30,
-        head: [['Date', 'Liters', 'Price/L', 'Amount', 'Note']],
-        body: rows,
-        theme: 'grid',
-        styles: { fontSize: 9, cellPadding: 2 },
-        headStyles: { fillColor: [15, 118, 110] },
-        alternateRowStyles: { fillColor: [240, 253, 244] }
-      });
-      const finalY = doc.lastAutoTable.finalY + 10;
-      doc.setFontSize(11);
-      doc.text(`Total Days: ${reportData.length}`, 14, finalY);
-      doc.text(`Total Liters: ${reportData.reduce((s,r)=>s+r.liters,0).toFixed(1)} L`, 14, finalY + 6);
-      doc.text(`Total Amount: ₹${reportData.reduce((s,r)=>s+r.amount,0).toFixed(2)}`, 14, finalY + 12);
-
-      doc.save(`milk-hisab-${cust.name}-${els.repFrom.value}.pdf`);
-      showToast('📄 PDF Downloaded');
-    }
-
-    function backupData() {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = `milk-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
-      showToast('💾 Backup Saved');
-    }
-
-    function formatDate(d) {
-      return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-    }
-
-    function bindEvents() {
-      document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-        t.classList.add('active');
-        $('setup-tab').classList.toggle('hidden', t.dataset.tab !== 'setup');
-        $('report-tab').classList.toggle('hidden', t.dataset.tab !== 'report');
-      }));
-
-      els.custSelect.addEventListener('change', () => {
-        const c = state.customers.find(x => x.id === els.custSelect.value);
-        if (c) { els.defLiters.value = c.defaultLiters || ''; els.defPrice.value = c.defaultPrice || ''; els.startDate.value = c.startDate || ''; }
-      });
-
-      $('add-cust-btn').onclick = addCustomer;
-      $('save-profile-btn').onclick = saveProfile;
-      $('add-exc-btn').onclick = addException;
-      $('generate-btn').onclick = generateReport;
-      $('pdf-btn').onclick = generatePDF;
-      $('backup-btn').onclick = backupData;      
-      // ⚠️ NEW: Clear All Data Button
-      $('clear-all-btn').onclick = clearAllData;
-      
-      els.tbody.addEventListener('click', e => { if (e.target.classList.contains('del-exc-btn')) deleteException(e.target.dataset.idx); });
-      
-      // Modal event handlers
-      els.modalCancelBtn.onclick = () => {
-        hideModal();
-        if (modalResolve) modalResolve(null);
-      };
-      
-      els.modalConfirmBtn.onclick = () => {
-        const inputValue = els.modalInput.value.trim();
-        hideModal();
-        if (modalResolve) {
-          modalResolve(els.modalInput.classList.contains('hidden') ? true : inputValue);
-        }
-      };
-      
-      // Close modal on overlay click
-      els.modalOverlay.onclick = (e) => {
-        if (e.target === els.modalOverlay) {
-          hideModal();
-          if (modalResolve) modalResolve(null);
-        }
-      };
-      
-      // Handle Enter key in modal input
-      els.modalInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          els.modalConfirmBtn.click();
-        }
-      });
-      
-      // Handle Escape key
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && els.modalOverlay.classList.contains('active')) {
-          hideModal();
-          if (modalResolve) modalResolve(null);
-        }
-      });
-    }
-    init();
-  </script>
-</body>
-</html>
+          <td>₹${r.price}</td>
+          <td>₹${r.amount.toFixed(2)}${r.note ? `<span class="note-tag">${r.note}</span>` : ''}</td>
+          <td>${r.isExc ? '<button class="btn-danger del-exc-btn" data-i
