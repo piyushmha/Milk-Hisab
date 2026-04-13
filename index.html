@@ -641,25 +641,28 @@
       
       els.tbody.addEventListener('click', e => { if (e.target.classList.contains('del-exc-btn')) deleteException(e.target.dataset.idx); });
       
-      // Modal event handlers
+      // Modal event handlers - FIXED
       els.modalCancelBtn.onclick = () => {
+        const resolve = modalResolve;  // Capture BEFORE hiding
         hideModal();
-        if (modalResolve) modalResolve(null);
+        if (resolve) resolve(null);
       };
       
       els.modalConfirmBtn.onclick = () => {
         const inputValue = els.modalInput.value.trim();
+        const resolve = modalResolve;  // Capture BEFORE hiding
         hideModal();
-        if (modalResolve) {
-          modalResolve(els.modalInput.classList.contains('hidden') ? true : inputValue);
+        if (resolve) {
+          resolve(els.modalInput.classList.contains('hidden') ? true : inputValue);
         }
       };
       
       // Close modal on overlay click
       els.modalOverlay.onclick = (e) => {
         if (e.target === els.modalOverlay) {
+          const resolve = modalResolve;  // Capture BEFORE hiding
           hideModal();
-          if (modalResolve) modalResolve(null);
+          if (resolve) resolve(null);
         }
       };
       
@@ -673,12 +676,12 @@
       // Handle Escape key
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && els.modalOverlay.classList.contains('active')) {
+          const resolve = modalResolve;  // Capture BEFORE hiding
           hideModal();
-          if (modalResolve) modalResolve(null);
+          if (resolve) resolve(null);
         }
       });
     }
     init();
   </script>
-</body>
-</html>
+</body></html>
