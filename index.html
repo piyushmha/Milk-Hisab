@@ -2,18 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0f766e">
-  <title>Milk Hisab - Auto Daily Tracker</title>
+  <title>Milk Hisab</title>
   <style>
     :root {
       --primary: #0f766e; --primary-hover: #0d655d;
       --bg: #f0fdf4; --card: #ffffff; --text: #022c22; --muted: #4b5563;
       --border: #d1d5db; --accent: #f59e0b; --danger: #ef4444;
-      --safe-bottom: env(safe-area-inset-bottom);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: calc(32px + var(--safe-bottom)); }
+    body { background: var(--bg); color: var(--text); }
     
     .container { max-width: 480px; margin: 0 auto; padding: 12px; }
     h1 { text-align: center; margin: 10px 0 16px; color: var(--primary); font-size: 1.4rem; }
@@ -22,8 +21,7 @@
     label { display: block; font-weight: 500; margin: 8px 0 4px; font-size: 0.85rem; color: var(--muted); }
     input, select {
       width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 8px;
-      font-size: 1rem; background: #fafafa; transition: border 0.2s;
-      -webkit-appearance: none; appearance: none;
+      font-size: 1rem; background: #fafafa;
     }
     input:focus, select:focus { outline: none; border-color: var(--primary); background: #fff; }
     
@@ -31,27 +29,25 @@
     .row > * { flex: 1; }
     
     button {
-      width: 100%; padding: 13px; border: none; border-radius: 8px; font-size: 0.95rem;
-      font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s;
+      width: 100%; padding: 13px; border: none; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 10px;
     }
     .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:active { transform: scale(0.98); }
     .btn-secondary { background: #e5e7eb; color: var(--text); margin-top: 8px; }
     .btn-accent { background: var(--accent); color: #000; margin-top: 8px; }
     .btn-danger { background: #fee2e2; color: var(--danger); width: auto; padding: 6px 10px; font-size: 0.8rem; margin: 0; }
     .btn-clear { background: #fecaca; color: #b91c1c; margin-top: 12px; }
-    .btn-clear:active { transform: scale(0.98); }
     
-    .tab-bar { display: flex; background: var(--card); border-radius: 10px; overflow: hidden; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .tab-bar { display: flex; background: var(--card); border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
     .tab { flex: 1; padding: 12px; text-align: center; font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent; }
     .tab.active { background: #ecfdf5; color: var(--primary); border-bottom-color: var(--primary); }
     
     .hidden { display: none !important; }
-    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.85rem; }    th, td { padding: 9px 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.85rem; }
+    th, td { padding: 9px 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
     th { color: var(--muted); font-weight: 500; background: #f9fafb; }
     .is-exception { background: #fff7ed; }
-    
-    .summary { display: flex; justify-content: space-between; padding: 12px 0; border-top: 2px dashed var(--border); margin-top: 8px; font-weight: 600; }
+        .summary { display: flex; justify-content: space-between; padding: 12px 0; border-top: 2px dashed var(--border); margin-top: 8px; font-weight: 600; }
     .summary div { text-align: center; }
     .summary span { display: block; font-size: 0.75rem; color: var(--muted); font-weight: 400; }
     
@@ -64,65 +60,46 @@
     .toast.error { background: #ef4444; }
     .toast.success { background: #059669; }
     
-    .empty { text-align: center; padding: 20px; color: var(--muted); font-style: italic; }
-    .note-tag { font-size: 0.7rem; background: #e0f2fe; color: #0369a1; padding: 2px 5px; border-radius: 4px; margin-left: 4px; }
-    
     .warning-box {
       background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;
       padding: 12px; margin-top: 8px; font-size: 0.8rem; color: #991b1b;
     }
 
-    /* Modal Styles */
+    /* Simple Modal */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.5);
       display: none; align-items: center; justify-content: center;
       z-index: 1000; padding: 20px;
     }
     .modal-overlay.active { display: flex; }
     
     .modal {
-      background: var(--card); border-radius: 16px; padding: 24px;
+      background: white; border-radius: 16px; padding: 24px;
       width: 100%; max-width: 400px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      animation: slideIn 0.3s ease;
-    }
-    @keyframes slideIn {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
     }
     
-    .modal-header { margin-bottom: 16px; }
-    .modal-title { font-size: 1.25rem; font-weight: 600; color: var(--text); margin-bottom: 8px; }
-    .modal-message { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 16px; }
+    .modal-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; }
+    .modal-message { color: var(--muted); margin-bottom: 16px; }
     
-    .modal-input {      width: 100%; padding: 12px 16px; border: 2px solid var(--border);
-      border-radius: 10px; font-size: 1rem; margin-bottom: 20px;
+    .modal-input {
+      width: 100%; padding: 12px; border: 2px solid var(--border);
+      border-radius: 10px; font-size: 1rem; margin-bottom: 16px;
     }
     .modal-input:focus { outline: none; border-color: var(--primary); }
     
-    .modal-actions { display: flex; gap: 12px; }
-    .modal-actions button { flex: 1; margin-top: 0; padding: 12px; }
+    .modal-buttons { display: flex; gap: 12px; }
+    .modal-buttons button { flex: 1; margin-top: 0; padding: 12px; }
     .modal-cancel { background: #f3f4f6; color: var(--text); }
-    .modal-confirm { background: var(--primary); color: white; }
-    .modal-confirm.danger { background: var(--danger); }
-
-    .modal-icon {
-      width: 48px; height: 48px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 16px; font-size: 24px;
-    }
-    .modal-icon.warning { background: #fef3c7; }
-    .modal-icon.danger { background: #fee2e2; }
-    .modal-icon.info { background: #e0f2fe; }
+    .modal-ok { background: var(--primary); color: white; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🥛 Milk Hisab</h1>
+  <div class="container">    <h1>🥛 Milk Hisab</h1>
     <div class="tab-bar">
-      <div class="tab active" data-tab="setup">⚙️ Setup & Exceptions</div>
-      <div class="tab" data-tab="report">📊 Report & PDF</div>
+      <div class="tab active" onclick="switchTab('setup')">⚙️ Setup & Exceptions</div>
+      <div class="tab" onclick="switchTab('report')">📊 Report & PDF</div>
     </div>
 
     <div id="setup-tab">
@@ -133,8 +110,8 @@
           <button id="add-cust-btn" class="btn-secondary" style="margin-top:0; width:auto;">+ New</button>
         </div>
         <div class="row">
-          <div><label>Default Liters/Day</label><input type="number" id="def-liters" inputmode="decimal" step="0.1" min="0"></div>
-          <div><label>Price / Liter (₹)</label><input type="number" id="def-price" inputmode="decimal" step="0.1" min="0"></div>
+          <div><label>Default Liters/Day</label><input type="number" id="def-liters" step="0.1" min="0"></div>
+          <div><label>Price / Liter (₹)</label><input type="number" id="def-price" step="0.1" min="0"></div>
         </div>
         <label>Start Date</label>
         <input type="date" id="start-date">
@@ -143,12 +120,12 @@
 
       <div class="card">
         <h3 style="margin-bottom:8px;">Add Date Exception</h3>
-        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;">Change liters/price for a specific day.</p>
         <div class="row">
-          <div><label>Date</label><input type="date" id="exc-date"></div>          <div><label>Liters</label><input type="number" id="exc-liters" inputmode="decimal" step="0.1" min="0"></div>
+          <div><label>Date</label><input type="date" id="exc-date"></div>
+          <div><label>Liters</label><input type="number" id="exc-liters" step="0.1" min="0"></div>
         </div>
         <div class="row">
-          <div><label>Price/L (₹)</label><input type="number" id="exc-price" inputmode="decimal" step="0.1" min="0"></div>
+          <div><label>Price/L (₹)</label><input type="number" id="exc-price" step="0.1" min="0"></div>
           <div><label>Note</label><input type="text" id="exc-note" placeholder="Holiday, less, etc."></div>
         </div>
         <button id="add-exc-btn" class="btn-accent">➕ Add Exception</button>
@@ -156,8 +133,7 @@
 
       <div class="card">
         <h3 style="margin-bottom:8px; color:var(--danger);">🗑️ Danger Zone</h3>
-        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:8px;">Permanently delete all data.</p>
-        <div class="warning-box">⚠️ This cannot be undone. <strong>Backup first</strong> if needed.</div>
+        <div class="warning-box">⚠️ This cannot be undone. Backup first if needed.</div>
         <button id="clear-all-btn" class="btn-clear">🗑️ Clear All Data</button>
       </div>
     </div>
@@ -169,8 +145,7 @@
         <div class="row" style="margin-top:8px;">
           <div><label>From Date</label><input type="date" id="rep-from"></div>
           <div><label>To Date</label><input type="date" id="rep-to"></div>
-        </div>
-        <button id="generate-btn" class="btn-primary">📅 Generate Report</button>
+        </div>        <button id="generate-btn" class="btn-primary">📅 Generate Report</button>
       </div>
 
       <div class="card" id="report-result" style="display:none;">
@@ -186,24 +161,22 @@
           <div><span>Total ₹</span><strong id="sum-amount">0</strong></div>
         </div>
         <button id="pdf-btn" class="btn-primary">📄 Download PDF</button>
-        <button id="backup-btn" class="btn-secondary" style="margin-top:8px;">💾 Backup Data</button>
+        <button id="backup-btn" class="btn-secondary">💾 Backup Data</button>
       </div>
     </div>
   </div>
 
   <div id="toast" class="toast">Saved!</div>
 
-  <!-- Modal -->
-  <div id="modal-overlay" class="modal-overlay">    <div class="modal">
-      <div id="modal-icon" class="modal-icon info">👤</div>
-      <div class="modal-header">
-        <h3 id="modal-title" class="modal-title">Title</h3>
-        <p id="modal-message" class="modal-message">Message</p>
-      </div>
-      <input type="text" id="modal-input" class="modal-input hidden" placeholder="Enter value...">
-      <div class="modal-actions">
-        <button id="modal-cancel-btn" class="modal-cancel">Cancel</button>
-        <button id="modal-confirm-btn" class="modal-confirm">Confirm</button>
+  <!-- Simple Modal for Customer Name -->
+  <div id="customer-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-title">Add New Customer</div>
+      <div class="modal-message">Enter customer name:</div>
+      <input type="text" id="customer-name-input" class="modal-input" placeholder="Customer Name">
+      <div class="modal-buttons">
+        <button class="modal-cancel" onclick="closeCustomerModal()">Cancel</button>
+        <button class="modal-ok" onclick="saveNewCustomer()">Add Customer</button>
       </div>
     </div>
   </div>
@@ -215,231 +188,152 @@
     const STORAGE = 'milk_hisab_v2';
     let state = { customers: [], exceptions: [] };
     let reportData = [];
-    let modalResult = null;
-    let modalResolver = null;
 
     const $ = id => document.getElementById(id);
-    const els = {
-      custSelect: $('cust-select'), repCust: $('rep-cust-select'),
-      defLiters: $('def-liters'), defPrice: $('def-price'), startDate: $('start-date'),
-      excDate: $('exc-date'), excLiters: $('exc-liters'), excPrice: $('exc-price'), excNote: $('exc-note'),
-      repFrom: $('rep-from'), repTo: $('rep-to'),
-      tbody: $('rep-tbody'), resultBox: $('report-result'),
-      toast: $('toast'),
-      modalOverlay: $('modal-overlay'), modalIcon: $('modal-icon'),
-      modalTitle: $('modal-title'), modalMessage: $('modal-message'),
-      modalInput: $('modal-input'), modalCancelBtn: $('modal-cancel-btn'),
-      modalConfirmBtn: $('modal-confirm-btn')
-    };
-
+    
     function init() {
       loadState();
       renderCustOptions();
-      els.startDate.value = new Date().toISOString().slice(0,10);
-      els.excDate.value = new Date().toISOString().slice(0,10);
-      bindEvents();
-      bindModalEvents();
+      $('start-date').value = new Date().toISOString().slice(0,10);      $('exc-date').value = new Date().toISOString().slice(0,10);
+      
+      // Event listeners
+      $('add-cust-btn').onclick = openCustomerModal;
+      $('save-profile-btn').onclick = saveProfile;
+      $('add-exc-btn').onclick = addException;
+      $('generate-btn').onclick = generateReport;
+      $('pdf-btn').onclick = generatePDF;
+      $('backup-btn').onclick = backupData;
+      $('clear-all-btn').onclick = clearAllData;
+      
+      $('cust-select').onchange = function() {
+        const c = state.customers.find(x => x.id === this.value);
+        if (c) {
+          $('def-liters').value = c.defaultLiters || '';
+          $('def-price').value = c.defaultPrice || '';
+          $('start-date').value = c.startDate || '';
+        }
+      };
+      
+      $('rep-tbody').onclick = function(e) {
+        if (e.target.classList.contains('del-exc-btn')) {
+          deleteException(parseInt(e.target.dataset.idx));
+        }
+      };
     }
 
     function loadState() {
       const s = localStorage.getItem(STORAGE);
-      if (s) try { state = JSON.parse(s); } catch(e){}    }
+      if (s) try { state = JSON.parse(s); } catch(e){}
+    }
     function saveState() { localStorage.setItem(STORAGE, JSON.stringify(state)); }
 
     function renderCustOptions() {
       const opts = state.customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-      els.custSelect.innerHTML = `<option value="">Select Customer</option>${opts}`;
-      els.repCust.innerHTML = `<option value="">Choose...</option>${opts}`;
+      $('cust-select').innerHTML = `<option value="">Select Customer</option>${opts}`;
+      $('rep-cust-select').innerHTML = `<option value="">Choose...</option>${opts}`;
     }
 
     function showToast(msg, type = 'normal') {
-      els.toast.textContent = msg;
-      els.toast.className = 'toast show';
-      if (type === 'error') els.toast.classList.add('error');
-      if (type === 'success') els.toast.classList.add('success');
-      setTimeout(() => els.toast.classList.remove('show'), 2500);
+      const t = $('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + (type === 'error' ? 'error' : type === 'success' ? 'success' : '');
+      setTimeout(() => t.classList.remove('show'), 2500);
     }
 
-    // Simple Modal - Returns value directly
-    function showModal(config) {
-      return new Promise((resolve) => {
-        // Setup modal
-        els.modalTitle.textContent = config.title || 'Confirm';
-        els.modalMessage.textContent = config.message || '';
-        els.modalIcon.textContent = config.icon || 'ℹ️';
-        els.modalIcon.className = 'modal-icon ' + (config.type || 'info');
-        
-        if (config.input) {
-          els.modalInput.classList.remove('hidden');
-          els.modalInput.placeholder = config.placeholder || 'Enter value...';
-          els.modalInput.value = '';
-        } else {
-          els.modalInput.classList.add('hidden');
-        }
-        
-        els.modalConfirmBtn.textContent = config.confirmText || 'Confirm';
-        els.modalCancelBtn.textContent = config.cancelText || 'Cancel';
-        els.modalConfirmBtn.classList.toggle('danger', config.danger || false);
-        
-        // Store resolver
-        modalResolver = resolve;
-        modalResult = null;
-        
-        // Show modal
-        els.modalOverlay.classList.add('active');
-        if (config.input) setTimeout(() => els.modalInput.focus(), 100);
-      });
+    // Simple Modal Functions - GUARANTEED TO WORK
+    function openCustomerModal() {
+      $('customer-name-input').value = '';
+      $('customer-modal').classList.add('active');      setTimeout(() => $('customer-name-input').focus(), 100);
     }
 
-    function hideModal(value) {
-      els.modalOverlay.classList.remove('active');      if (modalResolver) {
-        modalResolver(value);
-        modalResolver = null;
-      }
+    function closeCustomerModal() {
+      $('customer-modal').classList.remove('active');
     }
 
-    function bindModalEvents() {
-      // Cancel button
-      els.modalCancelBtn.addEventListener('click', () => {
-        hideModal(null);
-      });
+    function saveNewCustomer() {
+      const name = $('customer-name-input').value.trim();
       
-      // Confirm button
-      els.modalConfirmBtn.addEventListener('click', () => {
-        if (els.modalInput.classList.contains('hidden')) {
-          hideModal(true);
-        } else {
-          const value = els.modalInput.value.trim();
-          hideModal(value);
-        }
-      });
-      
-      // Enter key in input
-      els.modalInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          els.modalConfirmBtn.click();
-        }
-      });
-      
-      // Escape key
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && els.modalOverlay.classList.contains('active')) {
-          hideModal(null);
-        }
-      });
-    }
-
-    // Add Customer - NOW WORKING
-    async function addCustomer() {
-      const name = await showModal({
-        title: 'Add New Customer',
-        message: 'Enter the customer name:',
-        icon: '👤',
-        type: 'info',
-        input: true,
-        placeholder: 'Customer Name',
-        confirmText: 'Add',
-        cancelText: 'Cancel'
-      });
-            if (name && name.length > 0) {
-        const newCustomer = {
-          id: Date.now().toString(),
-          name: name.trim()
-        };
-        state.customers.push(newCustomer);
-        saveState();
-        renderCustOptions();
-        els.custSelect.value = newCustomer.id;
-        showToast('👤 Customer Added', 'success');
-      } else if (name !== null) {
+      if (!name) {
         showToast('⚠️ Please enter a name', 'error');
+        $('customer-name-input').focus();
+        return;
       }
+      
+      // Add customer
+      const newCustomer = {
+        id: Date.now().toString(),
+        name: name
+      };
+      
+      state.customers.push(newCustomer);
+      saveState();
+      renderCustOptions();
+      
+      // Select the new customer
+      $('cust-select').value = newCustomer.id;
+      
+      closeCustomerModal();
+      showToast('👤 Customer Added', 'success');
+    }
+
+    // Allow Enter key to save customer
+    $('customer-name-input')?.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') saveNewCustomer();
+    });
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      $('setup-tab').classList.toggle('hidden', tab !== 'setup');
+      $('report-tab').classList.toggle('hidden', tab !== 'report');
     }
 
     function saveProfile() {
-      const id = els.custSelect.value;
+      const id = $('cust-select').value;
       if (!id) return showToast('⚠️ Select a customer first', 'error');
-      const c = state.customers.find(x => x.id === id);
-      c.defaultLiters = parseFloat(els.defLiters.value) || 0;
-      c.defaultPrice = parseFloat(els.defPrice.value) || 0;
-      c.startDate = els.startDate.value || new Date().toISOString().slice(0,10);
+      
+      const c = state.customers.find(x => x.id === id);      c.defaultLiters = parseFloat($('def-liters').value) || 0;
+      c.defaultPrice = parseFloat($('def-price').value) || 0;
+      c.startDate = $('start-date').value || new Date().toISOString().slice(0,10);
+      
       saveState();
       showToast('✅ Profile Saved', 'success');
     }
 
-    async function addException() {
-      const custId = els.custSelect.value;
-      const date = els.excDate.value;
-      const liters = parseFloat(els.excLiters.value);
-      const price = parseFloat(els.excPrice.value) || state.customers.find(c=>c.id===custId)?.defaultPrice || 0;
-      const note = els.excNote.value.trim();
+    function addException() {
+      const custId = $('cust-select').value;
+      const date = $('exc-date').value;
+      const liters = parseFloat($('exc-liters').value);
+      const price = parseFloat($('exc-price').value) || state.customers.find(c=>c.id===custId)?.defaultPrice || 0;
+      const note = $('exc-note').value.trim();
 
       if (!custId || !date || isNaN(liters)) return showToast('⚠️ Fill required fields', 'error');
       
       if (state.exceptions.find(e => e.customerId === custId && e.date === date)) {
-        const confirmed = await showModal({
-          title: 'Override Exception',
-          message: 'Replace existing exception?',
-          icon: '⚠️',
-          type: 'warning',
-          confirmText: 'Replace',
-          cancelText: 'Cancel'
-        });
-        if (!confirmed) return;
+        if (!confirm('Override existing exception?')) return;
         state.exceptions = state.exceptions.filter(e => !(e.customerId === custId && e.date === date));
       }
       
       state.exceptions.push({ customerId: custId, date, liters, price, note });
-      saveState();      showToast('📝 Exception Added', 'success');
-      els.excLiters.value = '';
-      els.excNote.value = '';
+      saveState();
+      showToast('📝 Exception Added', 'success');
+      $('exc-liters').value = '';
+      $('exc-note').value = '';
     }
 
-    async function clearAllData() {
-      const confirmed = await showModal({
-        title: '⚠️ Delete All Data',
-        message: 'This will permanently delete everything. Cannot be undone!',
-        icon: '🗑️',
-        type: 'danger',
-        confirmText: 'Delete Everything',
-        cancelText: 'Keep Data',
-        danger: true
-      });
-      
-      if (!confirmed) return;
-      
-      const backup = await showModal({
-        title: 'Backup Data?',
-        message: 'Save a backup before deleting?',
-        icon: '💾',
-        type: 'info',
-        confirmText: 'Backup First',
-        cancelText: 'Delete'
-      });
-      
-      if (backup) {
-        backupData();
-        await new Promise(r => setTimeout(r, 500));
-      }
-      
+    function clearAllData() {
+      if (!confirm('⚠️ Delete ALL data? This cannot be undone!')) return;
       localStorage.removeItem(STORAGE);
       state = { customers: [], exceptions: [] };
-      reportData = [];
       renderCustOptions();
-      els.defLiters.value = '';
-      els.defPrice.value = '';
-      els.startDate.value = '';
-      els.excLiters.value = '';
-      els.excPrice.value = '';
-      els.excNote.value = '';
-      els.resultBox.style.display = 'none';
-      els.repCust.value = '';
-      els.repFrom.value = '';
-      els.repTo.value = '';
+      $('def-liters').value = '';
+      $('def-price').value = '';
+      $('start-date').value = '';
       showToast('🗑️ All data cleared', 'success');
     }
 
-    function getDatesInRange(start, end) {      const dates = [];
+    function getDatesInRange(start, end) {
+      const dates = [];
       let d = new Date(start);
       while (d <= new Date(end)) {
         dates.push(d.toISOString().slice(0, 10));
@@ -447,16 +341,17 @@
       }
       return dates;
     }
-
     function generateReport() {
-      const custId = els.repCust.value;
-      const from = els.repFrom.value;
-      const to = els.repTo.value;
+      const custId = $('rep-cust-select').value;
+      const from = $('rep-from').value;
+      const to = $('rep-to').value;
+      
       if (!custId || !from || !to) return showToast('⚠️ Select customer & dates', 'error');
-      if (from > to) return showToast('⚠️ End date must be after start date', 'error');
+      if (from > to) return showToast('⚠️ End date must be after start', 'error');
 
       const cust = state.customers.find(c => c.id === custId);
       const dates = getDatesInRange(from, to);
+      
       reportData = dates.map(date => {
         const exc = state.exceptions.find(e => e.customerId === custId && e.date === date);
         const liters = exc ? exc.liters : (cust.defaultLiters || 0);
@@ -465,15 +360,92 @@
       });
 
       renderTable();
-      els.resultBox.style.display = 'block';
+      $('report-result').style.display = 'block';
       showToast('📊 Report Generated', 'success');
     }
 
     function renderTable() {
-      els.tbody.innerHTML = reportData.map((r, i) => `
+      $('rep-tbody').innerHTML = reportData.map((r, i) => `
         <tr class="${r.isExc ? 'is-exception' : ''}">
           <td>${formatDate(r.date)}</td>
           <td>${r.liters}</td>
           <td>₹${r.price}</td>
           <td>₹${r.amount.toFixed(2)}${r.note ? `<span class="note-tag">${r.note}</span>` : ''}</td>
-          <td>${r.isExc ? '<button class="btn-danger del-exc-btn" data-i
+          <td>${r.isExc ? '<button class="btn-danger del-exc-btn" data-idx="'+i+'">✕</button>' : ''}</td>
+        </tr>
+      `).join('');
+
+      $('sum-days').textContent = reportData.length;
+      $('sum-liters').textContent = reportData.reduce((s, r) => s + r.liters, 0).toFixed(1);
+      $('sum-amount').textContent = reportData.reduce((s, r) => s + r.amount, 0).toFixed(2);
+    }
+
+    function deleteException(idx) {
+      const r = reportData[idx];
+      if (confirm(`Remove exception for ${r.date}?`)) {
+        state.exceptions = state.exceptions.filter(e => !(e.customerId === $('rep-cust-select').value && e.date === r.date));
+        saveState();
+        generateReport();
+        showToast('🗑️ Removed', 'success');
+      }
+    }
+
+    function generatePDF() {      if (typeof window.jspdf === 'undefined') {
+        return showToast('⚠️ PDF library loading... Try again in 2 seconds', 'error');
+      }
+      
+      const { jsPDF } = window.jspdf;
+      const cust = state.customers.find(c => c.id === $('rep-cust-select').value);
+      if (!cust || reportData.length === 0) return showToast('⚠️ No data', 'error');
+      
+      try {
+        const doc = new jsPDF();
+        doc.setFontSize(16);
+        doc.text(`Milk Hisab: ${cust.name}`, 14, 15);
+        doc.setFontSize(10);
+        doc.text(`Period: ${formatDate($('rep-from').value)} to ${formatDate($('rep-to').value)}`, 14, 22);
+
+        const rows = reportData.map(r => [
+          formatDate(r.date), `${r.liters} L`, `₹${r.price}`, `₹${r.amount.toFixed(2)}`, r.note || '-'
+        ]);
+
+        doc.autoTable({
+          startY: 30,
+          head: [['Date','Liters','Price/L','Amount','Note']],
+          body: rows,
+          theme: 'grid',
+          styles: { fontSize: 9, cellPadding: 2 },
+          headStyles: { fillColor: [15, 118, 110] },
+          alternateRowStyles: { fillColor: [240, 253, 244] }
+        });
+
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFontSize(11);
+        doc.text(`Total Days: ${reportData.length}`, 14, finalY);
+        doc.text(`Total Liters: ${reportData.reduce((s,r)=>s+r.liters,0).toFixed(1)} L`, 14, finalY + 6);
+        doc.text(`Total Amount: ₹${reportData.reduce((s,r)=>s+r.amount,0).toFixed(2)}`, 14, finalY + 12);
+
+        const safeName = cust.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        doc.save(`milk-hisab-${safeName}-${$('rep-from').value}.pdf`);
+        showToast('📄 PDF Downloaded', 'success');
+      } catch (e) {
+        showToast('❌ PDF Error: ' + e.message, 'error');
+      }
+    }
+
+    function backupData() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `milk-backup-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      showToast('💾 Backup Saved', 'success');    }
+
+    function formatDate(d) {
+      return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+    }
+
+    init();
+  </script>
+</body>
+</html>
